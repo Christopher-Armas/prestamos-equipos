@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import ec.edu.espe.prestamos.dto.ErrorRespuesta;
 
@@ -37,6 +38,15 @@ public class ManejadorGlobalExcepciones {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorRespuesta> integridad(DataIntegrityViolationException ex) {
         return construir(HttpStatus.CONFLICT, "La operacion viola la integridad de los datos");
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorRespuesta> validacion(MethodArgumentNotValidException ex) {
+        String mensaje = ex.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .orElse("Datos de entrada invalidos");
+        return construir(HttpStatus.BAD_REQUEST, mensaje);
     }
 
     private ResponseEntity<ErrorRespuesta> construir(HttpStatus estado, String mensaje) {
