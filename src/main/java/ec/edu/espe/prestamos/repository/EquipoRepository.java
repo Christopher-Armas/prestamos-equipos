@@ -25,6 +25,11 @@ public interface EquipoRepository extends JpaRepository<Equipo, Long> {
     @Query("select e from Equipo e join fetch e.tipoEquipo t where t.id = :tipoId order by e.nombre")
     List<Equipo> buscarPorTipo(@Param("tipoId") Long tipoId);
 
+    // Consulta personalizada: equipos que no tienen un prestamo activo.
+    @Query("select e from Equipo e join fetch e.tipoEquipo where not exists "
+            + "(select p.id from Prestamo p where p.equipo = e and p.estado = 'PRESTADO') order by e.nombre")
+    List<Equipo> listarDisponibles();
+
     @Query("select e from Equipo e join fetch e.tipoEquipo where e.id = :id")
     Optional<Equipo> buscarConTipoPorId(@Param("id") Long id);
 }
